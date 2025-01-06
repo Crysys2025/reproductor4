@@ -1,0 +1,246 @@
+<html><head><base href="https://www.oigo.com/nuevaq/radioenvivo/">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tierradentro Stereo</title>
+
+<style>
+:root {
+  --primary: #f14293;
+  --secondary: #61da14;
+  --accent: #f78222;
+  --text: #333;
+  --background: #fff;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: system-ui, sans-serif;
+  color: var(--text);
+  background: var(--background);
+  line-height: 1.5;
+}
+
+.player {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 1rem;
+}
+
+.player-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.station-logo {
+  width: 120px;
+  height: 120px;
+  border-radius: 1rem;
+  object-fit: cover;
+}
+
+.station-info h1 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.station-info p {
+  font-size: 1rem;
+  opacity: 0.8;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.play-button {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: none;
+  background: var(--primary);
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s;
+}
+
+.play-button:hover {
+  transform: scale(1.05);
+}
+
+.play-button svg {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+}
+
+.volume-control {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.volume-slider {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: #ddd;
+  cursor: pointer;
+  -webkit-appearance: none;
+}
+
+.volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--primary);
+  cursor: pointer;
+  border: none;
+}
+
+.now-playing {
+  background: #f5f5f5;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.now-playing h2 {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  opacity: 0.8;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading {
+  animation: spin 1s linear infinite;
+  opacity: 0.5;
+}
+
+@media (max-width: 600px) {
+  .player-header {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .volume-control {
+    display: none;
+  }
+}
+</style>
+
+</head>
+<body>
+
+<div class="player">
+  <div class="player-header">
+    <img src="https://i.imgur.com/VM58hja.png" alt="Tierradentro Stereo" class="station-logo">
+    <div class="station-info">
+      <h1>Tierradentro Stereo 92.7 FM</h1>
+      <p>Transmitiendo en vivo - La Radio que a ti te gusta</p>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="play-button" id="playButton" aria-label="Reproducir">
+      <svg viewBox="0 0 24 24" class="play-icon">
+        <path d="M8 5v14l11-7z"/>
+      </svg>
+      <svg viewBox="0 0 24 24" class="pause-icon" style="display:none">
+        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+      </svg>
+    </button>
+
+    <div class="volume-control">
+      <svg viewBox="0 0 24 24" width="24" height="24">
+        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+      </svg>
+      <input type="range" class="volume-slider" min="0" max="100" value="100">
+    </div>
+  </div>
+
+  <div class="now-playing">
+    <h2>Reproduciendo ahora:</h2>
+    <div id="currentTrack">Cargando...</div>
+  </div>
+</div>
+
+<script>
+const audio = new Audio('https://stream.zeno.fm/xv084ye33mruv');
+const playButton = document.getElementById('playButton');
+const playIcon = document.querySelector('.play-icon');
+const pauseIcon = document.querySelector('.pause-icon');
+const volumeSlider = document.querySelector('.volume-slider');
+const currentTrack = document.getElementById('currentTrack');
+
+let isPlaying = false;
+
+playButton.addEventListener('click', togglePlay);
+volumeSlider.addEventListener('input', handleVolumeChange);
+
+function togglePlay() {
+  if (isPlaying) {
+    audio.pause();
+    playIcon.style.display = 'block';
+    pauseIcon.style.display = 'none';
+  } else {
+    audio.play().catch(e => {
+      console.error('Error playing audio:', e);
+      alert('Sorry, there was an error playing the audio stream.');
+    });
+    playIcon.style.display = 'none';
+    pauseIcon.style.display = 'block';
+  }
+  isPlaying = !isPlaying;
+}
+
+function handleVolumeChange() {
+  audio.volume = volumeSlider.value / 100;
+}
+
+// Update now playing info
+function updateNowPlaying() {
+  fetch('https://api.zeno.fm/mounts/metadata/subscribe/xv084ye33mruv')
+    .then(response => response.text())
+    .then(data => {
+      // Parse metadata from stream
+      currentTrack.textContent = data.nowPlaying || 'Radio Nueva Q - En vivo';
+    })
+    .catch(err => {
+      console.error('Error fetching now playing:', err);
+      currentTrack.textContent = 'Radio Nueva Q - En vivo';
+    });
+}
+
+// Update now playing every 30 seconds
+setInterval(updateNowPlaying, 30000);
+updateNowPlaying();
+
+// Handle audio errors
+audio.addEventListener('error', () => {
+  console.error('Audio stream error');
+  isPlaying = false;
+  playIcon.style.display = 'block';
+  pauseIcon.style.display = 'none';
+  alert('Sorry, there was an error playing the audio stream. Please try again later.');
+});
+</script>
+
+</body></html>
